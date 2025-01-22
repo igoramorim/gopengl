@@ -1,27 +1,23 @@
-package main
+package scenes
 
 import (
 	"fmt"
 	"log"
-	"runtime"
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-func init() {
-	// GLFW event handling must run on the main OS thread
-	runtime.LockOSThread()
-}
+type Triangle struct{}
 
-func main() {
+func (s Triangle) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
 	}
 	defer glfw.Terminate()
 
-	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.Resizable, glfw.True)
 	glfw.WindowHint(glfw.ContextVersionMajor, 4)
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
@@ -32,6 +28,9 @@ func main() {
 		panic(err)
 	}
 	window.MakeContextCurrent()
+
+	// Handle window resize
+	window.SetFramebufferSizeCallback(frameBufferSizeCallback)
 
 	// Initialize Glow
 	if err := gl.Init(); err != nil {
@@ -143,10 +142,22 @@ func main() {
 	}
 }
 
-func processInput(window *glfw.Window) {
-	if window.GetKey(glfw.KeyEscape) == glfw.Press {
-		window.SetShouldClose(true)
+func processInput(w *glfw.Window) {
+	if w.GetKey(glfw.KeyEscape) == glfw.Press {
+		w.SetShouldClose(true)
 	}
+
+	if w.GetKey(glfw.KeyW) == glfw.Press {
+		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+	}
+
+	if w.GetKey(glfw.KeyF) == glfw.Press {
+		gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
+	}
+}
+
+func frameBufferSizeCallback(w *glfw.Window, width, height int) {
+	gl.Viewport(0, 0, int32(width), int32(height))
 }
 
 var vertexShaderSource = `
