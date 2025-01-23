@@ -31,6 +31,7 @@ func main() {
 
 var allScenes = map[string]func(){
 	"triangle": scenes.Triangle{}.Show,
+	"shaders":  scenes.Shaders{}.Show,
 }
 
 func help() {

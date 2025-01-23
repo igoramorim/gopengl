@@ -3,15 +3,16 @@ package scenes
 import (
 	"fmt"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-type Triangle struct{}
+type Shaders struct{}
 
-func (s Triangle) Show() {
+func (s Shaders) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
 	}
@@ -23,7 +24,7 @@ func (s Triangle) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Triangle", nil, nil)
+	window, err := glfw.CreateWindow(width, height, "Shaders Uniforms", nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -102,10 +103,10 @@ func (s Triangle) Show() {
 
 	// Vertex input data
 	var vertices = []float32{
-		// x y z r g b
-		-0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // left red
-		0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // right green
-		0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top blue
+		// x y z
+		-0.5, -0.5, 0.0, // left
+		0.5, -0.5, 0.0, // right
+		0.0, 0.5, 0.0, // top
 	}
 
 	var vao uint32
@@ -119,12 +120,8 @@ func (s Triangle) Show() {
 	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
 
 	// Position attribute
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6*4, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*4, nil)
 	gl.EnableVertexAttribArray(0)
-
-	// Color attribute
-	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*4, uintptr(3*4))
-	gl.EnableVertexAttribArray(1)
 
 	// Main loop
 	for !window.ShouldClose() {
@@ -134,6 +131,14 @@ func (s Triangle) Show() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.UseProgram(shaderProgram)
+
+		t := glfw.GetTime()
+		green := math.Sin(t)/2.0 + 0.5
+
+		// Send the value to the shader uniform variable named color
+		uniformLocation := gl.GetUniformLocation(shaderProgram, gl.Str("color\x00"))
+		gl.Uniform3f(uniformLocation, 0.0, float32(green), 0.0)
+
 		gl.BindVertexArray(vao)
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
@@ -142,30 +147,27 @@ func (s Triangle) Show() {
 	}
 }
 
-func (d Triangle) vertexShaderSource() string {
+func (d Shaders) vertexShaderSource() string {
 	return `
 #version 330 core
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 color;
-out vec3 vertexColor; // specify a color ouptput to the fragment shader
 
 void main() {
 	gl_Position = vec4(position, 1.0f);
-	vertexColor = color;
 }
 ` + "\x00"
 }
 
-func (d Triangle) fragmentShaderSource() string {
+func (d Shaders) fragmentShaderSource() string {
 	return `
 #version 330 core
 
-in vec3 vertexColor; // the input variable from the vertex shader (must be same name and type)
+uniform vec3 color; // value is set in the app code
 out vec4 FragColor;
 
 void main() {
-	FragColor = vec4(vertexColor, 1.0f);
+	FragColor = vec4(color, 1.0f);
 }
 ` + "\x00"
 }
