@@ -107,11 +107,10 @@ func (s Shaders) Show() {
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	// len(triangeVertices) * 4: 4 is the size of a float32
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*floatSize, gl.Ptr(vertices), gl.STATIC_DRAW)
 
 	// Position attribute
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*4, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*floatSize, nil)
 	gl.EnableVertexAttribArray(0)
 
 	// Main loop

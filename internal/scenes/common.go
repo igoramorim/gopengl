@@ -8,6 +8,8 @@ import (
 const (
 	width  = 800
 	height = 600
+
+	floatSize = 4
 )
 
 func processInput(w *glfw.Window) {

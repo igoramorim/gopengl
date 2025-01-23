@@ -123,17 +123,16 @@ func (s Triangle) Show() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	// Copy user data (vertices) into the currently bound buffer (VBO wich was binded to GL_ARRAY_BUFFER)
 	// Now we have vertex data stored in the GPU memory managed by a vertex buffer object (VBO)
-	// len(triangeVertices) * 4: 4 is the size of a float32
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*floatSize, gl.Ptr(vertices), gl.STATIC_DRAW)
 
 	// We need to tell OpenGL how to read the vertex input data. Attribute position
 	gl.VertexAttribPointer(
-		0,        // Wich vertex we want to configure. Vertex shader location = 0
-		3,        // Size of the vertex attribute. The input is a vec3, so it is composed of 3 values
-		gl.FLOAT, // Type of the data. vec3 is a vector of 3 floats
-		false,    // Data should be normalized?
-		6*4,      // Stride: Space between consecutive vertex attribute. Our input data have 9 float values, wich will be 3 packs of floats
-		nil,      // Offset where the position data begings in the buffer. The position is the first 3 values, so no need a offset
+		0,           // Wich vertex we want to configure. Vertex shader location = 0
+		3,           // Size of the vertex attribute. The input is a vec3, so it is composed of 3 values
+		gl.FLOAT,    // Type of the data. vec3 is a vector of 3 floats
+		false,       // Data should be normalized?
+		6*floatSize, // Stride: Space between consecutive vertex attribute. Our input data have 9 float values, wich will be 3 packs of floats
+		nil,         // Offset where the position data begings in the buffer. The position is the first 3 values, so no need a offset
 	)
 	// Enables attribute ID 0 wich was just set
 	gl.EnableVertexAttribArray(0)
