@@ -30,10 +30,8 @@ func (s Shaders) Show() {
 	}
 	window.MakeContextCurrent()
 
-	// Handle window resize
 	window.SetFramebufferSizeCallback(frameBufferSizeCallback)
 
-	// Initialize Glow
 	if err := gl.Init(); err != nil {
 		panic(err)
 	}
@@ -41,14 +39,12 @@ func (s Shaders) Show() {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version:", version)
 
-	// Vertex shader
 	vertexShader := gl.CreateShader(gl.VERTEX_SHADER)
 	vertexShaderCSource, free := gl.Strs(s.vertexShaderSource())
 	gl.ShaderSource(vertexShader, 1, vertexShaderCSource, nil)
 	free()
 	gl.CompileShader(vertexShader)
 
-	// Checks if the shader compiled ok
 	var status int32
 	gl.GetShaderiv(vertexShader, gl.COMPILE_STATUS, &status)
 	if status == gl.FALSE {
@@ -61,7 +57,6 @@ func (s Shaders) Show() {
 		panic(fmt.Sprintf("compile shader source %s\n %s\n", s.vertexShaderSource(), log))
 	}
 
-	// Fragment shader
 	fragmentShader := gl.CreateShader(gl.FRAGMENT_SHADER)
 	fragmentShaderCSource, free := gl.Strs(s.fragmentShaderSource())
 	gl.ShaderSource(fragmentShader, 1, fragmentShaderCSource, nil)
@@ -79,13 +74,11 @@ func (s Shaders) Show() {
 		panic(fmt.Sprintf("compile shader source %s\n %s\n", s.fragmentShaderSource(), log))
 	}
 
-	// Shader program
 	shaderProgram := gl.CreateProgram()
 	gl.AttachShader(shaderProgram, vertexShader)
 	gl.AttachShader(shaderProgram, fragmentShader)
 	gl.LinkProgram(shaderProgram)
 
-	// Checks if linking failed
 	gl.GetProgramiv(shaderProgram, gl.LINK_STATUS, &status)
 	if status == gl.FALSE {
 		var logLength int32
@@ -97,11 +90,9 @@ func (s Shaders) Show() {
 		panic(fmt.Sprintf("linking shader program %v\n", log))
 	}
 
-	// Once the lining is done, we do not need the shader objects anymore
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
 
-	// Vertex input data
 	var vertices = []float32{
 		// x y z
 		-0.5, -0.5, 0.0, // left
@@ -135,7 +126,7 @@ func (s Shaders) Show() {
 		t := glfw.GetTime()
 		green := math.Sin(t)/2.0 + 0.5
 
-		// Send the value to the shader uniform variable named color
+		// Send the value to the shader uniform variable named 'color'
 		uniformLocation := gl.GetUniformLocation(shaderProgram, gl.Str("color\x00"))
 		gl.Uniform3f(uniformLocation, 0.0, float32(green), 0.0)
 
@@ -163,7 +154,8 @@ func (d Shaders) fragmentShaderSource() string {
 	return `
 #version 330 core
 
-uniform vec3 color; // value is set in the app code
+uniform vec3 color; // value is set in the OpenGL code
+
 out vec4 FragColor;
 
 void main() {

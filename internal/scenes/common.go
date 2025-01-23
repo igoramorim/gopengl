@@ -12,14 +12,17 @@ const (
 
 func processInput(w *glfw.Window) {
 	if w.GetKey(glfw.KeyEscape) == glfw.Press {
+		// Closes window
 		w.SetShouldClose(true)
 	}
 
 	if w.GetKey(glfw.KeyW) == glfw.Press {
+		// Enables wireframe drawing
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	}
 
 	if w.GetKey(glfw.KeyF) == glfw.Press {
+		// Disables wireframe drawing
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
 	}
 }
