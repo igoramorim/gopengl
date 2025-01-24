@@ -113,6 +113,13 @@ func (s Shaders) Show() {
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*floatSize, nil)
 	gl.EnableVertexAttribArray(0)
 
+	// Clean up all resources
+	defer func() {
+		gl.DeleteVertexArrays(1, &vao)
+		gl.DeleteBuffers(1, &vbo)
+		gl.DeleteProgram(shaderProgram)
+	}()
+
 	// Main loop
 	for !window.ShouldClose() {
 		processInput(window)
