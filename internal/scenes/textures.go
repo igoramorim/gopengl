@@ -8,10 +8,10 @@ import (
 	_ "image/png"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/igoramorim/gopengl/pkg/shader"
 )
 
 type Textures struct{}
@@ -43,59 +43,10 @@ func (s Textures) Show() {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version:", version)
 
-	vertexShader := gl.CreateShader(gl.VERTEX_SHADER)
-	vertexShaderCSource, free := gl.Strs(s.vertexShaderSource())
-	gl.ShaderSource(vertexShader, 1, vertexShaderCSource, nil)
-	free()
-	gl.CompileShader(vertexShader)
-
-	var status int32
-	gl.GetShaderiv(vertexShader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(vertexShader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(vertexShader, logLength, nil, gl.Str(log))
-
-		panic(fmt.Sprintf("compile shader source %s\n %s\n", s.vertexShaderSource(), log))
+	shader, err := shader.New("internal/assets/shaders/texture.vert", "internal/assets/shaders/texture.frag")
+	if err != nil {
+		panic(err)
 	}
-
-	fragmentShader := gl.CreateShader(gl.FRAGMENT_SHADER)
-	fragmentShaderCSource, free := gl.Strs(s.fragmentShaderSource())
-	gl.ShaderSource(fragmentShader, 1, fragmentShaderCSource, nil)
-	free()
-	gl.CompileShader(fragmentShader)
-
-	gl.GetShaderiv(fragmentShader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetShaderiv(fragmentShader, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetShaderInfoLog(fragmentShader, logLength, nil, gl.Str(log))
-
-		panic(fmt.Sprintf("compile shader source %s\n %s\n", s.fragmentShaderSource(), log))
-	}
-
-	shaderProgram := gl.CreateProgram()
-	gl.AttachShader(shaderProgram, vertexShader)
-	gl.AttachShader(shaderProgram, fragmentShader)
-	gl.LinkProgram(shaderProgram)
-
-	gl.GetProgramiv(shaderProgram, gl.LINK_STATUS, &status)
-	if status == gl.FALSE {
-		var logLength int32
-		gl.GetProgramiv(shaderProgram, gl.INFO_LOG_LENGTH, &logLength)
-
-		log := strings.Repeat("\x00", int(logLength+1))
-		gl.GetProgramInfoLog(shaderProgram, logLength, nil, gl.Str(log))
-
-		panic(fmt.Sprintf("linking shader program %v\n", log))
-	}
-
-	gl.DeleteShader(vertexShader)
-	gl.DeleteShader(fragmentShader)
 
 	var vertices = []float32{
 		// x y z u v (tex coord)
@@ -200,7 +151,7 @@ func (s Textures) Show() {
 		gl.DeleteVertexArrays(1, &vao)
 		gl.DeleteBuffers(1, &vbo)
 		gl.DeleteBuffers(1, &ebo)
-		gl.DeleteProgram(shaderProgram)
+		shader.Delete()
 	}()
 
 	// Main loop
@@ -211,19 +162,17 @@ func (s Textures) Show() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		// Need to activate the shader before setting the texture uniform
-		gl.UseProgram(shaderProgram)
+		shader.Use()
 
 		// Activate, bind and set the first texture uniform in the shader
 		gl.ActiveTexture(gl.TEXTURE0)
 		gl.BindTexture(gl.TEXTURE_2D, texture0)
-		texture1Uniform := gl.GetUniformLocation(shaderProgram, gl.Str("texture0\x00"))
-		gl.Uniform1i(texture1Uniform, 0)
+		shader.SetInt("texture0", 0)
 
 		// Activate, bind and set the second texture uniform in the shader
 		gl.ActiveTexture(gl.TEXTURE1)
 		gl.BindTexture(gl.TEXTURE_2D, texture1)
-		texture2Uniform := gl.GetUniformLocation(shaderProgram, gl.Str("texture1\x00"))
-		gl.Uniform1i(texture2Uniform, 1)
+		shader.SetInt("texture1", 1)
 
 		gl.BindVertexArray(vao)
 		// Draw the rectangle using the ebo
@@ -232,40 +181,6 @@ func (s Textures) Show() {
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
-}
-
-func (d Textures) vertexShaderSource() string {
-	return `
-#version 330 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec2 texCoord;
-
-out vec2 TexCoord;
-
-void main() {
-	gl_Position = vec4(position, 1.0f);
-	TexCoord = texCoord;
-}
-` + "\x00"
-}
-
-func (d Textures) fragmentShaderSource() string {
-	return `
-#version 330 core
-
-uniform sampler2D texture0;
-uniform sampler2D texture1;
-
-in vec2 TexCoord;
-
-out vec4 FragColor;
-
-void main() {
-	// FragColor = texture(texture0, TexCoord);
-	FragColor = mix(texture(texture0, TexCoord), texture(texture1, TexCoord), 0.2);
-}
-` + "\x00"
 }
 
 func (d Textures) loadImage(file string) (*image.RGBA, error) {
