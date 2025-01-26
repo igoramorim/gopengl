@@ -9,7 +9,8 @@ const (
 	width  = 800
 	height = 600
 
-	floatSize = 4
+	floatSize  = 4
+	uint32Size = 4
 )
 
 func processInput(w *glfw.Window) {
