@@ -131,7 +131,7 @@ func (s Triangle) Show() {
 		3,           // Size of the vertex attribute. The input is a vec3, so it is composed of 3 values
 		gl.FLOAT,    // Type of the data. vec3 is a vector of 3 floats
 		false,       // Data should be normalized?
-		6*floatSize, // Stride: Space between consecutive vertex attribute. Our input data have 9 float values, wich will be 3 packs of floats
+		6*floatSize, // Stride: Space between consecutive vertex attribute. Our input data have 6 float values, wich will be 3 packs of floats
 		nil,         // Offset where the position data begings in the buffer. The position is the first 3 values, so no need a offset
 	)
 	// Enables attribute ID 0 wich was just set
@@ -139,7 +139,7 @@ func (s Triangle) Show() {
 
 	// Tells OpenGL how to read the Color attribute
 	// Note that now we do have a offset. The color data is the second group of floats
-	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*4, uintptr(3*4))
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*floatSize, 3*floatSize)
 	gl.EnableVertexAttribArray(1)
 
 	// Clean up all resources
