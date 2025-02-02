@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 func New(vertexPath, fragPath string) (*Shader, error) {
@@ -114,7 +115,14 @@ func (s *Shader) Delete() {
 	gl.DeleteProgram(s.id)
 }
 
+// TODO: Add uniform location cache to be used in every Set*Uniform* method below
+
 func (s *Shader) SetInt(name string, value int32) {
 	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
 	gl.Uniform1i(uniform, value)
+}
+
+func (s *Shader) SetMat4(name string, value mgl32.Mat4) {
+	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	gl.UniformMatrix4fv(uniform, 1, false, &value[0])
 }
