@@ -35,6 +35,7 @@ var allScenes = map[string]func(){
 	"textures":          scenes.Textures{}.Show,
 	"transformations":   scenes.Transformations{}.Show,
 	"coordinate-system": scenes.CoordinateSystem{}.Show,
+	"cube":              scenes.Cube{}.Show,
 }
 
 func help() {
