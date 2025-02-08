@@ -30,10 +30,11 @@ func main() {
 }
 
 var allScenes = map[string]func(){
-	"triangle":        scenes.Triangle{}.Show,
-	"shaders":         scenes.Shaders{}.Show,
-	"textures":        scenes.Textures{}.Show,
-	"transformations": scenes.Transformations{}.Show,
+	"triangle":          scenes.Triangle{}.Show,
+	"shaders":           scenes.Shaders{}.Show,
+	"textures":          scenes.Textures{}.Show,
+	"transformations":   scenes.Transformations{}.Show,
+	"coordinate-system": scenes.CoordinateSystem{}.Show,
 }
 
 func help() {
