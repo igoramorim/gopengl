@@ -19,7 +19,7 @@ func processInput(w *glfw.Window) {
 		w.SetShouldClose(true)
 	}
 
-	if w.GetKey(glfw.KeyW) == glfw.Press {
+	if w.GetKey(glfw.KeyL) == glfw.Press {
 		// Enables wireframe drawing
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 	}
