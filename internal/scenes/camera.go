@@ -43,6 +43,10 @@ type Camera struct {
 	lastFrame   float64
 }
 
+func (s Camera) Name() string {
+	return "camera"
+}
+
 func (s Camera) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -55,7 +59,7 @@ func (s Camera) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Camera", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}

@@ -11,6 +11,10 @@ import (
 
 type Triangle struct{}
 
+func (s Triangle) Name() string {
+	return "triangle"
+}
+
 func (s Triangle) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -23,7 +27,7 @@ func (s Triangle) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Triangle", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}

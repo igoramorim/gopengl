@@ -12,6 +12,10 @@ import (
 
 type Shaders struct{}
 
+func (s Shaders) Name() string {
+	return "shaders_uniforms"
+}
+
 func (s Shaders) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -24,7 +28,7 @@ func (s Shaders) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Shaders Uniforms", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}

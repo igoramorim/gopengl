@@ -16,6 +16,10 @@ import (
 
 type Textures struct{}
 
+func (s Textures) Name() string {
+	return "textures"
+}
+
 func (s Textures) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -28,7 +32,7 @@ func (s Textures) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Textures", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}

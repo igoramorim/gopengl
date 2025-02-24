@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"github.com/igoramorim/gopengl/internal/scenes"
+	"github.com/igoramorim/gopengl/internal/sshot"
 )
 
 func init() {
@@ -26,17 +27,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	defer func() {
+		err := sshot.MakeGIF()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}()
+
 	scene()
 }
 
 var allScenes = map[string]func(){
-	"triangle":          scenes.Triangle{}.Show,
-	"shaders":           scenes.Shaders{}.Show,
-	"textures":          scenes.Textures{}.Show,
-	"transformations":   scenes.Transformations{}.Show,
-	"coordinate-system": scenes.CoordinateSystem{}.Show,
-	"cube":              scenes.Cube{}.Show,
-	"camera":            scenes.NewCamera().Show,
+	scenes.Triangle{}.Name():         scenes.Triangle{}.Show,
+	scenes.Shaders{}.Name():          scenes.Shaders{}.Show,
+	scenes.Textures{}.Name():         scenes.Textures{}.Show,
+	scenes.Transformations{}.Name():  scenes.Transformations{}.Show,
+	scenes.CoordinateSystem{}.Name(): scenes.CoordinateSystem{}.Show,
+	scenes.Cube{}.Name():             scenes.Cube{}.Show,
+	scenes.Camera{}.Name():           scenes.NewCamera().Show,
 }
 
 func help() {

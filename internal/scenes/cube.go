@@ -13,6 +13,10 @@ import (
 
 type Cube struct{}
 
+func (s Cube) Name() string {
+	return "cube"
+}
+
 func (s Cube) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -25,7 +29,7 @@ func (s Cube) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Cube", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}

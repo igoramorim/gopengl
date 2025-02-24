@@ -17,23 +17,23 @@ $ go run cmd/cli/main.go ${scene}
 
 # Scenes
 
-## Triangle
+## triangle
 ![](/images/triangle.png)
 
-## Shaders
-TODO: GIF
+## shaders uniforms
+![](/images/shaders_uniforms.gif)
 
-## Textures
+## textures
 ![](/images/textures.png)
 
-## Transformations
-TODO: GIF
+## transformations
+![](/images/transformations.gif)
 
-## Coordinate System
-![](/images/coordinate-system.png)
+## coordinate system
+![](/images/coordinate_system.png)
 
-## Cube
-TODO: GIF
+## cube
+![](/images/cube.gif)
 
-## Camera
-TODO: GIF
+## camera
+![](/images/camera.gif)

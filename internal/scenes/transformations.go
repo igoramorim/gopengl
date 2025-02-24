@@ -13,6 +13,10 @@ import (
 
 type Transformations struct{}
 
+func (s Transformations) Name() string {
+	return "transformations"
+}
+
 func (s Transformations) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -25,7 +29,7 @@ func (s Transformations) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Transformations", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -150,6 +154,10 @@ func (s Transformations) Show() {
 
 		gl.BindVertexArray(vao)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+
+		// TODO: Control how many seconds will be taking screen shots
+		// TODO: Be able to control how many screen shots will be taken in a second
+		// screenShot(s.Name())
 
 		window.SwapBuffers()
 		glfw.PollEvents()

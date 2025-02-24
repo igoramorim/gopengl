@@ -13,6 +13,10 @@ import (
 
 type CoordinateSystem struct{}
 
+func (s CoordinateSystem) Name() string {
+	return "coordinate_system"
+}
+
 func (s CoordinateSystem) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -25,7 +29,7 @@ func (s CoordinateSystem) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, "Coordinate System", nil, nil)
+	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}
