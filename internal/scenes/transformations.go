@@ -17,6 +17,14 @@ func (s Transformations) Name() string {
 	return "transformations"
 }
 
+func (s Transformations) Width() int {
+	return width
+}
+
+func (s Transformations) Height() int {
+	return height
+}
+
 func (s Transformations) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
@@ -29,7 +37,7 @@ func (s Transformations) Show() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
-	window, err := glfw.CreateWindow(width, height, s.Name(), nil, nil)
+	window, err := glfw.CreateWindow(s.Width(), s.Height(), s.Name(), nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -109,7 +117,7 @@ func (s Transformations) Show() {
 
 	// Main loop
 	for !window.ShouldClose() {
-		processInput(window)
+		processInput(window, s)
 
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)

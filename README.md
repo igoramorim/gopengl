@@ -37,3 +37,6 @@ $ go run cmd/cli/main.go ${scene}
 
 ## camera
 ![](/images/camera.gif)
+
+## light colors
+![](/images/light_colors.png)

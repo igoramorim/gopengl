@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/gif"
+	"image/png"
 	"os"
 	"path/filepath"
 
@@ -28,6 +29,24 @@ type ScreenShoter struct {
 	max       int
 	deltaTime float64
 	lastFrame float64
+}
+
+func (ss *ScreenShoter) TakeOne() {
+	pixels := make([]uint8, 4*ss.width*ss.height) // 4 = R G B A
+	gl.ReadPixels(0, 0, int32(ss.width), int32(ss.height), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(&pixels[0]))
+
+	f, err := os.Create(fmt.Sprintf("%s/%s%s", filepath.Join(".", "images"), ss.filename, ".png"))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	img := image.NewRGBA(image.Rect(0, 0, ss.width, ss.height))
+	img.Pix = pixels
+
+	if err := png.Encode(f, img); err != nil {
+		panic(err)
+	}
 }
 
 func (ss *ScreenShoter) Take() {

@@ -34,22 +34,24 @@ func main() {
 		}
 	}()
 
-	scene()
+	scene.Show()
 }
 
-var allScenes = map[string]func(){
-	scenes.Triangle{}.Name():         scenes.Triangle{}.Show,
-	scenes.Shaders{}.Name():          scenes.Shaders{}.Show,
-	scenes.Textures{}.Name():         scenes.Textures{}.Show,
-	scenes.Transformations{}.Name():  scenes.Transformations{}.Show,
-	scenes.CoordinateSystem{}.Name(): scenes.CoordinateSystem{}.Show,
-	scenes.Cube{}.Name():             scenes.Cube{}.Show,
-	scenes.Camera{}.Name():           scenes.NewCamera().Show,
+var allScenes = map[string]scenes.Scene{
+	scenes.Triangle{}.Name():         scenes.Triangle{},
+	scenes.Shaders{}.Name():          scenes.Shaders{},
+	scenes.Textures{}.Name():         scenes.Textures{},
+	scenes.Transformations{}.Name():  scenes.Transformations{},
+	scenes.CoordinateSystem{}.Name(): scenes.CoordinateSystem{},
+	scenes.Cube{}.Name():             scenes.Cube{},
+	scenes.Camera{}.Name():           scenes.NewCamera(),
+	scenes.LightColors{}.Name():      scenes.NewLightColors(),
 }
 
 func help() {
 	fmt.Printf("scene name is required\n")
 	fmt.Printf("possible values are: %q\n", possibleScenes())
+	// TODO: Add message about possible controls (camera movement, screenshot etc)
 }
 
 func possibleScenes() []string {
