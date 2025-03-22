@@ -13,20 +13,22 @@ import (
 
 func NewLightColors() LightColors {
 	return LightColors{
-		camera:    camera.New(),
-		lastX:     float64(width) / 2,
-		lastY:     float64(height) / 2,
-		deltaTime: 0.0,
-		lastFrame: 0.0,
+		camera:     camera.New(),
+		firstMouse: true,
+		lastX:      float64(width) / 2,
+		lastY:      float64(height) / 2,
+		deltaTime:  0.0,
+		lastFrame:  0.0,
 	}
 }
 
 type LightColors struct {
-	camera    *camera.Camera
-	lastX     float64
-	lastY     float64
-	deltaTime float64 // Time between current frame and last frame
-	lastFrame float64
+	camera     *camera.Camera
+	firstMouse bool
+	lastX      float64
+	lastY      float64
+	deltaTime  float64 // Time between current frame and last frame
+	lastFrame  float64
 }
 
 func (s LightColors) Name() string {
@@ -237,6 +239,12 @@ func (s *LightColors) processInput(w *glfw.Window) {
 }
 
 func (s *LightColors) mouseCallback(w *glfw.Window, xpos, ypos float64) {
+	if s.firstMouse {
+		s.lastX = xpos
+		s.lastY = ypos
+		s.firstMouse = false
+	}
+
 	xoffset := xpos - s.lastX
 	yoffset := s.lastY - ypos
 	s.lastX = xpos
