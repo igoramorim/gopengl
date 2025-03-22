@@ -3,44 +3,30 @@ package scenes
 import (
 	"fmt"
 	"log"
-	"math"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/go-gl/mathgl/mgl64"
+	"github.com/igoramorim/gopengl/pkg/camera"
 	"github.com/igoramorim/gopengl/pkg/shader"
 )
 
 func NewLightColors() LightColors {
 	return LightColors{
-		cameraPos:   mgl32.Vec3{0.0, 0.0, 3.0},
-		cameraFront: mgl32.Vec3{0.0, 0.0, -1.0},
-		cameraUp:    mgl32.Vec3{0.0, 1.0, 0.0},
-		firstMouse:  true,
-		lastX:       float64(width) / 2,
-		lastY:       float64(height) / 2,
-		yaw:         -90.0,
-		pitch:       0.0,
-		fov:         45.0,
-		deltaTime:   0.0,
-		lastFrame:   0.0,
+		camera:    camera.New(),
+		lastX:     float64(width) / 2,
+		lastY:     float64(height) / 2,
+		deltaTime: 0.0,
+		lastFrame: 0.0,
 	}
 }
 
-// TODO: Create Camera struct
 type LightColors struct {
-	cameraPos   mgl32.Vec3
-	cameraFront mgl32.Vec3
-	cameraUp    mgl32.Vec3
-	firstMouse  bool
-	lastX       float64
-	lastY       float64
-	yaw         float64
-	pitch       float64
-	fov         float64
-	deltaTime   float64 // Time between current frame and last frame
-	lastFrame   float64
+	camera    *camera.Camera
+	lastX     float64
+	lastY     float64
+	deltaTime float64 // Time between current frame and last frame
+	lastFrame float64
 }
 
 func (s LightColors) Name() string {
@@ -76,7 +62,7 @@ func (s LightColors) Show() {
 	window.SetFramebufferSizeCallback(frameBufferSizeCallback)
 	window.SetCursorPosCallback(s.mouseCallback)
 	window.SetScrollCallback(s.mouseScrollCallback)
-	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+	window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
 
 	if err := gl.Init(); err != nil {
 		panic(err)
@@ -195,11 +181,10 @@ func (s LightColors) Show() {
 		lightingShader.SetVec3f("objectColor", 1.0, 0.5, 0.31)
 		lightingShader.SetVec3f("lightColor", 1.0, 1.0, 1.0)
 
-		viewMatrix := mgl32.Ident4()
-		viewMatrix = mgl32.LookAtV(s.cameraPos, s.cameraPos.Add(s.cameraFront), s.cameraUp)
+		viewMatrix := s.camera.ViewMatrix()
 
 		projectionMatrix := mgl32.Ident4()
-		projectionMatrix = mgl32.Perspective(mgl32.DegToRad(float32(s.fov)), width/height, 0.1, 100.0)
+		projectionMatrix = mgl32.Perspective(mgl32.DegToRad(float32(s.camera.Fov)), width/height, 0.1, 100.0)
 
 		lightingShader.SetMat4("view", viewMatrix)
 		lightingShader.SetMat4("projection", projectionMatrix)
@@ -234,68 +219,32 @@ func (s LightColors) Show() {
 func (s *LightColors) processInput(w *glfw.Window) {
 	processInput(w, s)
 
-	// deltaTime used to make speed consistency among different hardware setups
-	cameraSpeed := 2.5 * float32(s.deltaTime)
 	if w.GetKey(glfw.KeyW) == glfw.Press {
-		s.cameraPos = s.cameraPos.Add(s.cameraFront.Mul(cameraSpeed))
+		s.camera.ProcessKeyboard(camera.Forward, s.deltaTime)
 	}
 
 	if w.GetKey(glfw.KeyS) == glfw.Press {
-		s.cameraPos = s.cameraPos.Sub(s.cameraFront.Mul(cameraSpeed))
+		s.camera.ProcessKeyboard(camera.Backward, s.deltaTime)
 	}
 
 	if w.GetKey(glfw.KeyA) == glfw.Press {
-		s.cameraPos = s.cameraPos.Sub(s.cameraFront.Cross(s.cameraUp).Normalize().Mul(cameraSpeed))
+		s.camera.ProcessKeyboard(camera.Left, s.deltaTime)
 	}
 
 	if w.GetKey(glfw.KeyD) == glfw.Press {
-		s.cameraPos = s.cameraPos.Add(s.cameraFront.Cross(s.cameraUp).Normalize().Mul(cameraSpeed))
+		s.camera.ProcessKeyboard(camera.Right, s.deltaTime)
 	}
 }
 
 func (s *LightColors) mouseCallback(w *glfw.Window, xpos, ypos float64) {
-	if s.firstMouse {
-		s.lastX = xpos
-		s.lastY = ypos
-		s.firstMouse = false
-	}
-
 	xoffset := xpos - s.lastX
 	yoffset := s.lastY - ypos
 	s.lastX = xpos
 	s.lastY = ypos
 
-	sensitivity := 0.1
-	xoffset *= sensitivity
-	yoffset *= sensitivity
-
-	s.yaw += xoffset
-	s.pitch += yoffset
-
-	if s.pitch > 89.0 {
-		s.pitch = 89.0
-	}
-
-	if s.pitch < -89.0 {
-		s.pitch = -89.0
-	}
-
-	direction := mgl32.Vec3{
-		float32(math.Cos(mgl64.DegToRad(s.yaw)) * math.Cos(mgl64.DegToRad(s.pitch))),
-		float32(math.Sin(mgl64.DegToRad(s.pitch))),
-		float32(math.Sin(mgl64.DegToRad(s.yaw)) * math.Cos(mgl64.DegToRad(s.pitch))),
-	}
-	s.cameraFront = direction.Normalize()
+	s.camera.ProcessMouseMovement(xoffset, yoffset, true)
 }
 
 func (s *LightColors) mouseScrollCallback(w *glfw.Window, xoff, yoff float64) {
-	s.fov -= yoff
-
-	if s.fov < 1.0 {
-		s.fov = 1.0
-	}
-
-	if s.fov > 45.0 {
-		s.fov = 45.0
-	}
+	s.camera.ProcessMouseScroll(yoff)
 }
