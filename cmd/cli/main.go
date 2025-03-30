@@ -46,6 +46,7 @@ var allScenes = map[string]scenes.Scene{
 	scenes.Cube{}.Name():             scenes.Cube{},
 	scenes.Camera{}.Name():           scenes.NewCamera(),
 	scenes.LightColors{}.Name():      scenes.NewLightColors(),
+	scenes.BasicLight{}.Name():       scenes.NewBasicLight(),
 }
 
 func help() {

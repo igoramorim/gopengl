@@ -40,3 +40,6 @@ $ go run cmd/cli/main.go ${scene}
 
 ## light colors
 ![](/images/light_colors.png)
+
+## basic light
+gif generation is too bad for this one

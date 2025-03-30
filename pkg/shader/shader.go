@@ -131,3 +131,8 @@ func (s *Shader) SetVec3f(name string, x, y, z float32) {
 	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
 	gl.Uniform3f(uniform, x, y, z)
 }
+
+func (s *Shader) SetVec3(name string, value mgl32.Vec3) {
+	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	gl.Uniform3fv(uniform, 1, &value[0])
+}

@@ -3,6 +3,7 @@ package scenes
 import (
 	"fmt"
 	"log"
+	"math"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -11,8 +12,8 @@ import (
 	"github.com/igoramorim/gopengl/pkg/shader"
 )
 
-func NewLightColors() LightColors {
-	return LightColors{
+func NewBasicLight() BasicLight {
+	return BasicLight{
 		camera:     camera.New(),
 		firstMouse: true,
 		lastX:      float64(width) / 2,
@@ -22,7 +23,7 @@ func NewLightColors() LightColors {
 	}
 }
 
-type LightColors struct {
+type BasicLight struct {
 	camera     *camera.Camera
 	firstMouse bool
 	lastX      float64
@@ -31,19 +32,19 @@ type LightColors struct {
 	lastFrame  float64
 }
 
-func (s LightColors) Name() string {
-	return "light_colors"
+func (s BasicLight) Name() string {
+	return "basic_light"
 }
 
-func (s LightColors) Width() int {
+func (s BasicLight) Width() int {
 	return width
 }
 
-func (s LightColors) Height() int {
+func (s BasicLight) Height() int {
 	return height
 }
 
-func (s LightColors) Show() {
+func (s BasicLight) Show() {
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("initialize glfw:", err)
 	}
@@ -73,7 +74,7 @@ func (s LightColors) Show() {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version:", version)
 
-	lightingShader, err := shader.New("internal/assets/shaders/light_colors.vert", "internal/assets/shaders/light_colors.frag")
+	lightingShader, err := shader.New("internal/assets/shaders/basic_light.vert", "internal/assets/shaders/basic_light.frag")
 	if err != nil {
 		panic(err)
 	}
@@ -84,48 +85,48 @@ func (s LightColors) Show() {
 	}
 
 	var vertices = []float32{
-		// x y z
-		-0.5, -0.5, -0.5,
-		0.5, -0.5, -0.5,
-		0.5, 0.5, -0.5,
-		0.5, 0.5, -0.5,
-		-0.5, 0.5, -0.5,
-		-0.5, -0.5, -0.5,
+		// x y z          normals
+		-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+		0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+		0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+		0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+		-0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+		-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
 
-		-0.5, -0.5, 0.5,
-		0.5, -0.5, 0.5,
-		0.5, 0.5, 0.5,
-		0.5, 0.5, 0.5,
-		-0.5, 0.5, 0.5,
-		-0.5, -0.5, 0.5,
+		-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+		0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+		0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+		0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+		-0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
 
-		-0.5, 0.5, 0.5,
-		-0.5, 0.5, -0.5,
-		-0.5, -0.5, -0.5,
-		-0.5, -0.5, -0.5,
-		-0.5, -0.5, 0.5,
-		-0.5, 0.5, 0.5,
+		-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
+		-0.5, 0.5, -0.5, -1.0, 0.0, 0.0,
+		-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+		-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+		-0.5, -0.5, 0.5, -1.0, 0.0, 0.0,
+		-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
 
-		0.5, 0.5, 0.5,
-		0.5, 0.5, -0.5,
-		0.5, -0.5, -0.5,
-		0.5, -0.5, -0.5,
-		0.5, -0.5, 0.5,
-		0.5, 0.5, 0.5,
+		0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 0.0, 0.0,
+		0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+		0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+		0.5, -0.5, 0.5, 1.0, 0.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
 
-		-0.5, -0.5, -0.5,
-		0.5, -0.5, -0.5,
-		0.5, -0.5, 0.5,
-		0.5, -0.5, 0.5,
-		-0.5, -0.5, 0.5,
-		-0.5, -0.5, -0.5,
+		-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+		0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+		0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+		0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+		-0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+		-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
 
-		-0.5, 0.5, -0.5,
-		0.5, 0.5, -0.5,
-		0.5, 0.5, 0.5,
-		0.5, 0.5, 0.5,
-		-0.5, 0.5, 0.5,
-		-0.5, 0.5, -0.5,
+		-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+		0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+		0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+		0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+		-0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
 	}
 
 	// First, configure the cubes's VAO and VBO
@@ -140,8 +141,11 @@ func (s LightColors) Show() {
 	gl.BindVertexArray(cubeVAO)
 
 	// Position attribute
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*floatSize, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6*floatSize, nil)
 	gl.EnableVertexAttribArray(0)
+	// Normal attribute
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*floatSize, 3*floatSize)
+	gl.EnableVertexAttribArray(1)
 
 	// Second, configure the light's VAO
 	// (VBO stays the same. The vertices are the same for the light object wich is also a 3D cube)
@@ -154,7 +158,7 @@ func (s LightColors) Show() {
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 
 	// Position attribute
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3*floatSize, nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6*floatSize, nil)
 	gl.EnableVertexAttribArray(0)
 
 	// Clean up all resources
@@ -171,17 +175,31 @@ func (s LightColors) Show() {
 	for !window.ShouldClose() {
 		s.processInput(window)
 
-		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
+		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		currentFrame := glfw.GetTime()
 		s.deltaTime = currentFrame - s.lastFrame
 		s.lastFrame = currentFrame
 
-		// Be sure to activate shader when settings uniforms/drawing objects
+		lightPos := mgl32.Vec3{
+			float32(math.Sin(glfw.GetTime())),
+			1.0,
+			float32(math.Cos(glfw.GetTime())),
+		}
+
+		lightColor := mgl32.Vec3{
+			float32(math.Sin(glfw.GetTime())*0.5 + 0.5),
+			1.0,
+			float32(math.Cos(glfw.GetTime())*0.5 + 0.5),
+			// 1.0, 1.0, 1.0,
+		}
+
 		lightingShader.Use()
-		lightingShader.SetVec3f("objectColor", 1.0, 0.5, 0.31)
-		lightingShader.SetVec3f("lightColor", 1.0, 1.0, 1.0)
+		lightingShader.SetVec3f("objectColor", 1.0, 0.0, 1.0)
+		lightingShader.SetVec3("lightColor", lightColor)
+		lightingShader.SetVec3("lightPos", lightPos)
+		lightingShader.SetVec3("viewPos", s.camera.Position)
 
 		viewMatrix := s.camera.ViewMatrix()
 
@@ -202,10 +220,10 @@ func (s LightColors) Show() {
 		lightCubeShader.Use()
 		lightCubeShader.SetMat4("projection", projectionMatrix)
 		lightCubeShader.SetMat4("view", viewMatrix)
-		lightCubeShader.SetVec3f("lightColor", 1.0, 1.0, 1.0)
+		lightCubeShader.SetVec3("lightColor", lightColor)
 
 		modelMatrix = mgl32.Ident4()
-		translate := mgl32.Translate3D(1.2, 1.2, 0.5)
+		translate := mgl32.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z())
 		modelMatrix = modelMatrix.Mul4(translate)
 		scale := mgl32.Scale3D(0.2, 0.2, 0.2)
 		modelMatrix = modelMatrix.Mul4(scale)
@@ -219,12 +237,12 @@ func (s LightColors) Show() {
 	}
 }
 
-func (s *LightColors) processInput(w *glfw.Window) {
+func (s *BasicLight) processInput(w *glfw.Window) {
 	processInput(w, s)
 	processCameraKeyboardInput(w, s.camera, s.deltaTime)
 }
 
-func (s *LightColors) mouseCallback(w *glfw.Window, xpos, ypos float64) {
+func (s *BasicLight) mouseCallback(w *glfw.Window, xpos, ypos float64) {
 	if s.firstMouse {
 		s.lastX = xpos
 		s.lastY = ypos
@@ -239,6 +257,6 @@ func (s *LightColors) mouseCallback(w *glfw.Window, xpos, ypos float64) {
 	s.camera.ProcessMouseMovement(xoffset, yoffset, true)
 }
 
-func (s *LightColors) mouseScrollCallback(w *glfw.Window, xoff, yoff float64) {
+func (s *BasicLight) mouseScrollCallback(w *glfw.Window, xoff, yoff float64) {
 	s.camera.ProcessMouseScroll(yoff)
 }

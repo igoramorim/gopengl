@@ -14,6 +14,8 @@ const (
 	Backward = "BACKWARD"
 	Left     = "LEFT"
 	Right    = "RIGHT"
+	Up       = "UP"
+	Down     = "DOWN"
 )
 
 // TODO: Add optionals to receive custom values for position, front, up, fov etc.
@@ -86,6 +88,10 @@ func (c *Camera) ProcessKeyboard(direction Direction, deltaTime float64) {
 		c.Position = c.Position.Sub(c.Front.Cross(c.Up).Normalize().Mul(float32(velocity)))
 	case Right:
 		c.Position = c.Position.Add(c.Front.Cross(c.Up).Normalize().Mul(float32(velocity)))
+	case Up:
+		c.Position = c.Position.Add(c.Up.Mul(float32(velocity)))
+	case Down:
+		c.Position = c.Position.Sub(c.Up.Mul(float32(velocity)))
 	}
 
 	// fmt.Printf("camera position: %v\n", c.Position)
