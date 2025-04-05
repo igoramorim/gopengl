@@ -21,25 +21,25 @@ $ go run cmd/cli/main.go ${scene}
 ![](/images/triangle.png)
 
 ## shaders uniforms
-![](/images/shaders_uniforms.gif)
+![](/images/shaders_uniforms.png)
 
 ## textures
 ![](/images/textures.png)
 
 ## transformations
-![](/images/transformations.gif)
+![](/images/transformations.png)
 
 ## coordinate system
 ![](/images/coordinate_system.png)
 
 ## cube
-![](/images/cube.gif)
+![](/images/cube.png)
 
 ## camera
-![](/images/camera.gif)
+no preview
 
 ## light colors
 ![](/images/light_colors.png)
 
 ## basic light
-gif generation is too bad for this one
+![](/images/basic_light.png)
