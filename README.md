@@ -20,7 +20,7 @@ $ go run cmd/cli/main.go ${scene}
 ## triangle
 ![](/images/triangle.png)
 
-## shaders uniforms
+## shaders_uniforms
 ![](/images/shaders_uniforms.png)
 
 ## textures
@@ -29,7 +29,7 @@ $ go run cmd/cli/main.go ${scene}
 ## transformations
 ![](/images/transformations.png)
 
-## coordinate system
+## coordinate_system
 ![](/images/coordinate_system.png)
 
 ## cube
@@ -38,8 +38,8 @@ $ go run cmd/cli/main.go ${scene}
 ## camera
 no preview
 
-## light colors
+## light_colors
 ![](/images/light_colors.png)
 
-## basic light
+## basic_light
 ![](/images/basic_light.png)
