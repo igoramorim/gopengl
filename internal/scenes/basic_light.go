@@ -65,7 +65,7 @@ func (s BasicLight) Show() {
 	window.SetFramebufferSizeCallback(frameBufferSizeCallback)
 	window.SetCursorPosCallback(s.mouseCallback)
 	window.SetScrollCallback(s.mouseScrollCallback)
-	window.SetInputMode(glfw.CursorMode, glfw.CursorHidden)
+	window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 
 	if err := gl.Init(); err != nil {
 		panic(err)
