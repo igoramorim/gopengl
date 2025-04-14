@@ -46,3 +46,6 @@ no preview
 
 ## materials
 ![](/images/materials.png)
+
+## light_maps
+![](/images/light_maps.png)
