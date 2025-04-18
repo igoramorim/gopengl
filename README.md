@@ -49,3 +49,6 @@ no preview
 
 ## light_maps
 ![](/images/light_maps.png)
+
+## directional_light
+![](/images/directional_light.png)
