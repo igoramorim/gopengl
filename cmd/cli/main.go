@@ -50,6 +50,7 @@ var allScenes = map[string]scenes.Scene{
 	scenes.Materials{}.Name():        scenes.NewMaterials(),
 	scenes.LightMaps{}.Name():        scenes.NewLightMaps(),
 	scenes.DirectionalLight{}.Name(): scenes.NewDirectionalLight(),
+	scenes.PointLight{}.Name():       scenes.NewPointLight(),
 }
 
 func help() {

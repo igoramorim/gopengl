@@ -52,3 +52,6 @@ no preview
 
 ## directional_light
 ![](/images/directional_light.png)
+
+## point_light
+![](/images/point_light.png)
