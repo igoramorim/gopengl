@@ -55,3 +55,6 @@ no preview
 
 ## point_light
 ![](/images/point_light.png)
+
+## spotlight
+![](/images/spotlight.png)
