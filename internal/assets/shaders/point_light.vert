@@ -20,7 +20,7 @@ void main() {
 	Normal = mat3(transpose(inverse(model))) * normal;
 
 	// Note that we read the multiplication from right to left
-	gl_Position = projection * view * model * vec4(FragPos, 1.0);
+	gl_Position = projection * view * vec4(FragPos, 1.0);
 
 	TexCoords = texCoords;
 }
