@@ -1,0 +1,113 @@
+package mesh
+
+import (
+	"fmt"
+	"strconv"
+	"unsafe"
+
+	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/igoramorim/gopengl/pkg/shader"
+)
+
+func New(vertices []Vertex, indices []uint32, textures []Texture) *Mesh {
+	mesh := Mesh{
+		Vertices: vertices,
+		Indices:  indices,
+		Textures: textures,
+	}
+
+	mesh.setup()
+
+	return &mesh
+}
+
+type Mesh struct {
+	Vertices []Vertex
+	Indices  []uint32
+	Textures []Texture
+	vao      uint32
+	vbo      uint32
+	ebo      uint32
+}
+
+func (m *Mesh) Draw(shader *shader.Shader) {
+	diffuseNr := 1
+	specularNr := 1
+	normalNr := 1
+	heightNr := 1
+
+	for i, tex := range m.Textures {
+		gl.ActiveTexture(gl.TEXTURE0 + uint32(i))
+
+		var number string
+		name := tex.xtype
+
+		switch name {
+		case texDiffuse:
+			number = strconv.Itoa(diffuseNr)
+		case texSpecular:
+			number = strconv.Itoa(specularNr)
+		case texNormal:
+			number = strconv.Itoa(normalNr)
+		case texHeight:
+			number = strconv.Itoa(heightNr)
+		}
+
+		shader.SetInt(fmt.Sprint("material.%s%s", name, number), int32(i))
+		gl.BindTexture(gl.TEXTURE_2D, tex.id)
+
+		diffuseNr++
+		specularNr++
+		normalNr++
+		heightNr++
+	}
+
+	gl.BindVertexArray(m.vao)
+	gl.DrawElements(gl.TRIANGLES, int32(len(m.Indices)), gl.UNSIGNED_INT, nil)
+	gl.BindVertexArray(0)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+}
+
+func (m *Mesh) setup() {
+	gl.GenVertexArrays(1, &m.vao)
+	gl.GenBuffers(1, &m.vbo)
+	gl.GenBuffers(1, &m.ebo)
+
+	gl.BindVertexArray(m.vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, m.vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(m.Vertices)*sizeofVertex(), gl.Ptr(m.Vertices), gl.STATIC_DRAW)
+
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.ebo)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(m.Indices)*int(unsafe.Sizeof(m.ebo)), gl.Ptr(m.Indices), gl.STATIC_DRAW)
+
+	// Vertex Positions
+	gl.EnableVertexAttribArray(0)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), nil)
+
+	// Vertex Normals
+	gl.EnableVertexAttribArray(1)
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetNormals()))
+
+	// Vertex Texture Coords
+	gl.EnableVertexAttribArray(2)
+	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetTextCoords()))
+
+	// Vertex Tangent
+	gl.EnableVertexAttribArray(3)
+	gl.VertexAttribPointerWithOffset(3, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetTangent()))
+
+	// Vertex Bitangent
+	gl.EnableVertexAttribArray(4)
+	gl.VertexAttribPointerWithOffset(4, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetBitangent()))
+
+	// Vertex BoneIDs
+	gl.EnableVertexAttribArray(5)
+	gl.VertexAttribPointerWithOffset(5, 4, gl.INT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetBoneIDs()))
+
+	// Vertex Weights
+	gl.EnableVertexAttribArray(6)
+	gl.VertexAttribPointerWithOffset(6, 4, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetWeights()))
+
+	gl.BindVertexArray(0)
+}
