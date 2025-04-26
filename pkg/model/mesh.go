@@ -1,4 +1,4 @@
-package mesh
+package model
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/igoramorim/gopengl/pkg/shader"
 )
 
-func New(vertices []Vertex, indices []uint32, textures []Texture) *Mesh {
+func NewMesh(vertices []Vertex, indices []uint32, textures []Texture) Mesh {
 	mesh := Mesh{
 		Vertices: vertices,
 		Indices:  indices,
@@ -18,7 +18,7 @@ func New(vertices []Vertex, indices []uint32, textures []Texture) *Mesh {
 
 	mesh.setup()
 
-	return &mesh
+	return mesh
 }
 
 type Mesh struct {
@@ -70,44 +70,48 @@ func (m *Mesh) Draw(shader *shader.Shader) {
 }
 
 func (m *Mesh) setup() {
+	var dummy Vertex
+	vertexSize := int(unsafe.Sizeof(dummy))
+	vertexSize32 := int32(vertexSize)
+
 	gl.GenVertexArrays(1, &m.vao)
 	gl.GenBuffers(1, &m.vbo)
 	gl.GenBuffers(1, &m.ebo)
 
 	gl.BindVertexArray(m.vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, m.vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(m.Vertices)*sizeofVertex(), gl.Ptr(m.Vertices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(m.Vertices)*vertexSize, gl.Ptr(m.Vertices), gl.STATIC_DRAW)
 
 	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.ebo)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(m.Indices)*int(unsafe.Sizeof(m.ebo)), gl.Ptr(m.Indices), gl.STATIC_DRAW)
 
 	// Vertex Positions
 	gl.EnableVertexAttribArray(0)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), nil)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, vertexSize32, nil)
 
 	// Vertex Normals
 	gl.EnableVertexAttribArray(1)
-	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetNormals()))
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, vertexSize32, unsafe.Offsetof(dummy.Normal))
 
 	// Vertex Texture Coords
 	gl.EnableVertexAttribArray(2)
-	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetTextCoords()))
+	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, vertexSize32, unsafe.Offsetof(dummy.TexCoords))
 
 	// Vertex Tangent
 	gl.EnableVertexAttribArray(3)
-	gl.VertexAttribPointerWithOffset(3, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetTangent()))
+	gl.VertexAttribPointerWithOffset(3, 3, gl.FLOAT, false, vertexSize32, unsafe.Offsetof(dummy.Tangent))
 
 	// Vertex Bitangent
 	gl.EnableVertexAttribArray(4)
-	gl.VertexAttribPointerWithOffset(4, 3, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetBitangent()))
+	gl.VertexAttribPointerWithOffset(4, 3, gl.FLOAT, false, vertexSize32, unsafe.Offsetof(dummy.Bitangent))
 
 	// Vertex BoneIDs
 	gl.EnableVertexAttribArray(5)
-	gl.VertexAttribPointerWithOffset(5, 4, gl.INT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetBoneIDs()))
+	gl.VertexAttribPointerWithOffset(5, 4, gl.INT, false, vertexSize32, unsafe.Offsetof(dummy.BoneIDs))
 
 	// Vertex Weights
 	gl.EnableVertexAttribArray(6)
-	gl.VertexAttribPointerWithOffset(6, 4, gl.FLOAT, false, int32(len(m.Vertices)*sizeofVertex()), uintptr(offsetWeights()))
+	gl.VertexAttribPointerWithOffset(6, 4, gl.FLOAT, false, vertexSize32, unsafe.Offsetof(dummy.Weights))
 
 	gl.BindVertexArray(0)
 }

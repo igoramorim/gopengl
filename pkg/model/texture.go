@@ -1,4 +1,4 @@
-package mesh
+package model
 
 type texType string
 
