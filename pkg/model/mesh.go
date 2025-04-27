@@ -37,8 +37,6 @@ func (m *Mesh) Draw(shader *shader.Shader) {
 	heightNr := 1
 
 	for i, tex := range m.Textures {
-		gl.ActiveTexture(gl.TEXTURE0 + uint32(i))
-
 		var number string
 		name := tex.xtype
 
@@ -53,7 +51,13 @@ func (m *Mesh) Draw(shader *shader.Shader) {
 			number = strconv.Itoa(heightNr)
 		}
 
-		shader.SetInt(fmt.Sprint("material.%s%s", name, number), int32(i))
+		gl.ActiveTexture(gl.TEXTURE0 + uint32(i))
+
+		uniform := fmt.Sprintf("%s%s", name, number)
+		fmt.Printf("uniform name: %+v\n", uniform)
+
+		// gl.Uniform1i(gl.GetUniformLocation(shader.ID, gl.Str(uniform+"\x00")), int32(i))
+		shader.SetInt(uniform, int32(i))
 		gl.BindTexture(gl.TEXTURE_2D, tex.id)
 
 		diffuseNr++

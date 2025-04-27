@@ -42,7 +42,7 @@ func New(vertexPath, fragPath string) (*Shader, error) {
 		return nil, err
 	}
 
-	return &Shader{id: id}, nil
+	return &Shader{ID: id}, nil
 }
 
 func readFile(path string) ([]byte, error) {
@@ -104,40 +104,40 @@ func checkCompileErr(shader uint32, xtype string) error {
 }
 
 type Shader struct {
-	id uint32
+	ID uint32
 }
 
 func (s *Shader) Use() {
-	gl.UseProgram(s.id)
+	gl.UseProgram(s.ID)
 }
 
 func (s *Shader) Delete() {
-	gl.DeleteProgram(s.id)
+	gl.DeleteProgram(s.ID)
 }
 
 // TODO: Add uniform location cache to be used in every Set*Uniform* method below
 
 func (s *Shader) SetInt(name string, value int32) {
-	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	uniform := gl.GetUniformLocation(s.ID, gl.Str(name+"\x00"))
 	gl.Uniform1i(uniform, value)
 }
 
 func (s *Shader) SetFloat(name string, value float32) {
-	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	uniform := gl.GetUniformLocation(s.ID, gl.Str(name+"\x00"))
 	gl.Uniform1f(uniform, value)
 }
 
 func (s *Shader) SetMat4(name string, value mgl32.Mat4) {
-	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	uniform := gl.GetUniformLocation(s.ID, gl.Str(name+"\x00"))
 	gl.UniformMatrix4fv(uniform, 1, false, &value[0])
 }
 
 func (s *Shader) SetVec3f(name string, x, y, z float32) {
-	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	uniform := gl.GetUniformLocation(s.ID, gl.Str(name+"\x00"))
 	gl.Uniform3f(uniform, x, y, z)
 }
 
 func (s *Shader) SetVec3(name string, value mgl32.Vec3) {
-	uniform := gl.GetUniformLocation(s.id, gl.Str(name+"\x00"))
+	uniform := gl.GetUniformLocation(s.ID, gl.Str(name+"\x00"))
 	gl.Uniform3fv(uniform, 1, &value[0])
 }

@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/draw"
 	"os"
+	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/igoramorim/gopengl/pkg/shader"
@@ -39,8 +40,10 @@ func (m *Model) load(path string) error {
 	}
 	defer release()
 
-	// TODO: Not sure if it is necessary to split, trim etc
-	m.directory = path
+	fmt.Printf("path received:\n%s\n\n", path)
+	fmt.Printf("root node:\n%+v\n\n", scene.RootNode)
+
+	m.directory = path[:strings.LastIndex(path, "/")]
 
 	m.processNode(scene.RootNode, scene)
 
@@ -56,11 +59,14 @@ func (m *Model) processNode(aiNode *asig.Node, aiScene *asig.Scene) error {
 			return err
 		}
 		m.meshes = append(m.meshes, mesh)
+		// fmt.Printf("mesh: %+v\n", mesh)
 	}
 
 	for i := range aiNode.Children {
 		m.processNode(aiNode.Children[i], aiScene)
 	}
+
+	fmt.Printf("meshes: %+v\n\n", len(m.meshes))
 
 	return nil
 }
@@ -123,6 +129,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 		}
 		vertices = append(vertices, vertex)
 	}
+	// fmt.Printf("vertices: %+v\n\n", vertices)
 
 	// Walk through each of the mesh's faces (a face is a mesh's triangle) and retrieve the
 	// corresponding vertex indices
@@ -132,6 +139,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 			indices = append(indices, uint32(aiFace.Indices[j]))
 		}
 	}
+	// fmt.Printf("indices: %+v\n\n", indices)
 
 	// Materials
 	aiMaterial := aiScene.Materials[aiMesh.MaterialIndex]
@@ -149,6 +157,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 		return Mesh{}, err
 	}
 	textures = append(textures, diffuseMaps...)
+	// fmt.Printf("diffuse textures: %+v\n\n", len(diffuseMaps))
 
 	// Specular
 	specularMaps, err := m.loadMaterialTextures(aiMaterial, asig.TextureTypeSpecular, texSpecular)
@@ -156,6 +165,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 		return Mesh{}, err
 	}
 	textures = append(textures, specularMaps...)
+	// fmt.Printf("specular textures: %+v\n\n", len(specularMaps))
 
 	// Normals
 	normalMaps, err := m.loadMaterialTextures(aiMaterial, asig.TextureTypeNormal, texNormal)
@@ -163,6 +173,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 		return Mesh{}, err
 	}
 	textures = append(textures, normalMaps...)
+	// fmt.Printf("normals textures: %+v\n\n", len(normalMaps))
 
 	// Height
 	heightMaps, err := m.loadMaterialTextures(aiMaterial, asig.TextureTypeHeight, texHeight)
@@ -170,6 +181,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 		return Mesh{}, err
 	}
 	textures = append(textures, heightMaps...)
+	// fmt.Printf("height textures: %+v\n\n", len(heightMaps))
 
 	return NewMesh(vertices, indices, textures), nil
 }
@@ -179,18 +191,22 @@ func (m *Model) loadMaterialTextures(aiMaterial *asig.Material, aiTexType asig.T
 
 	var textures []Texture
 
-	for i := range aiMaterial.Properties {
+	for i := 0; i < asig.GetMaterialTextureCount(aiMaterial, aiTexType); i++ {
 		var skip bool
 		matInfo, err := asig.GetMaterialTexture(aiMaterial, aiTexType, uint(i))
 		if err != nil {
 			return nil, err
 		}
+		// fmt.Printf("material texture: %+v\n\n", matInfo.Path)
 
 		for j := 0; j < len(m.texturesLoaded); j++ {
+			// fmt.Printf("texture already loaded: %+v == material texture: %+v\n\n",
+			// m.texturesLoaded[j].path, matInfo.Path)
 			if m.texturesLoaded[j].path == matInfo.Path {
 				// Texture with the same filepath already been loaded. Continue to next one
 				textures = append(textures, m.texturesLoaded[j])
 				skip = true
+				// fmt.Printf("material texture already loaded: %+v\n\n", matInfo.Path)
 				break
 			}
 		}
@@ -211,6 +227,7 @@ func (m *Model) loadMaterialTextures(aiMaterial *asig.Material, aiTexType asig.T
 			// Store it as texture loaded for entire model to ensure
 			// we won't unnecessary load duplicated textures
 			m.texturesLoaded = append(m.texturesLoaded, texture)
+			// fmt.Printf("texture: %+v\n\n", texture)
 		}
 	}
 
@@ -218,15 +235,19 @@ func (m *Model) loadMaterialTextures(aiMaterial *asig.Material, aiTexType asig.T
 }
 
 func textureFromFile(path, directory string) (uint32, error) {
-	var id uint32
-	gl.GenTextures(1, &id)
 
 	fullpath := directory + "/" + path
+	// fmt.Printf("load texture from file: %+v\n\n", fullpath)
 
 	imageData, err := loadImage(fullpath)
 	if err != nil {
 		return 0, err
 	}
+	// fmt.Printf("texture data: %+v bytes\n\n", len(imageData.Pix))
+
+	var id uint32
+	gl.GenTextures(1, &id)
+	gl.BindTexture(gl.TEXTURE_2D, id)
 
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
@@ -239,7 +260,13 @@ func textureFromFile(path, directory string) (uint32, error) {
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(imageData.Pix),
 	)
-	// gl.GenerateTextureMipmap(texture) // FIXME: Está gerando panic
+	// gl.GenerateTextureMipmap(id) // FIXME: Está gerando panic
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
 	return id, nil
 }
