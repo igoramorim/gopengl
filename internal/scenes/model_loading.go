@@ -95,7 +95,7 @@ func (s ModelLoading) Show() {
 	for !window.ShouldClose() {
 		s.processInput(window)
 
-		gl.ClearColor(1.0, 0.05, 1.0, 1.0)
+		gl.ClearColor(0.1, 0.1, 0.1, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		currentFrame := glfw.GetTime()

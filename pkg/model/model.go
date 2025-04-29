@@ -34,25 +34,27 @@ type Model struct {
 
 func (m *Model) load(path string) error {
 	fsys := os.DirFS(".")
-	scene, release, err := asig.ImportFileEx(path, asig.PostProcessTriangulate|asig.PostProcessGenSmoothNormals|asig.PostProcessFlipUVs|asig.PostProcessCalcTangentSpace, fsys)
+	scene, release, err := asig.ImportFileEx(path, asig.PostProcessTriangulate|asig.PostProcessGenSmoothNormals|asig.PostProcessCalcTangentSpace, fsys)
 	if err != nil {
 		return err
 	}
 	defer release()
 
-	fmt.Printf("path received:\n%s\n\n", path)
-	fmt.Printf("root node:\n%+v\n\n", scene.RootNode)
+	// fmt.Printf("path received:%s\n\n", path)
+	// fmt.Printf("root node:\n%+v\n\n", scene.RootNode)
 
 	m.directory = path[:strings.LastIndex(path, "/")]
 
-	m.processNode(scene.RootNode, scene)
+	if err := m.processNode(scene.RootNode, scene); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (m *Model) processNode(aiNode *asig.Node, aiScene *asig.Scene) error {
-	for i := range aiNode.MeshIndicies {
-		aiMesh := aiScene.Meshes[aiNode.MeshIndicies[i]]
+	for _, i := range aiNode.MeshIndicies {
+		aiMesh := aiScene.Meshes[i]
 
 		mesh, err := m.processMesh(aiMesh, aiScene)
 		if err != nil {
@@ -63,10 +65,10 @@ func (m *Model) processNode(aiNode *asig.Node, aiScene *asig.Scene) error {
 	}
 
 	for i := range aiNode.Children {
-		m.processNode(aiNode.Children[i], aiScene)
+		if err := m.processNode(aiNode.Children[i], aiScene); err != nil {
+			return err
+		}
 	}
-
-	fmt.Printf("meshes: %+v\n\n", len(m.meshes))
 
 	return nil
 }
@@ -99,7 +101,7 @@ func (m *Model) processMesh(aiMesh *asig.Mesh, aiScene *asig.Scene) (Mesh, error
 		}
 
 		// Texture Coordinates
-		if len(aiMesh.TexCoords) > 0 {
+		if len(aiMesh.TexCoords[0]) > 0 {
 			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption
 			// that we won't use models where a vertex can have multiple texture coordinates
 			// so we always take the first set (0)
@@ -235,7 +237,6 @@ func (m *Model) loadMaterialTextures(aiMaterial *asig.Material, aiTexType asig.T
 }
 
 func textureFromFile(path, directory string) (uint32, error) {
-
 	fullpath := directory + "/" + path
 	// fmt.Printf("load texture from file: %+v\n\n", fullpath)
 
@@ -249,6 +250,8 @@ func textureFromFile(path, directory string) (uint32, error) {
 	gl.GenTextures(1, &id)
 	gl.BindTexture(gl.TEXTURE_2D, id)
 
+	// fmt.Printf("width: %d height: %d\n", imageData.Rect.Size().X, int32(imageData.Rect.Size().Y))
+
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
 		0,
@@ -260,9 +263,10 @@ func textureFromFile(path, directory string) (uint32, error) {
 		gl.UNSIGNED_BYTE,
 		gl.Ptr(imageData.Pix),
 	)
-	// gl.GenerateTextureMipmap(id) // FIXME: Está gerando panic
+	// gl.GenerateTextureMipmap(id) // FIXME: It is panicing
 
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	// gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)

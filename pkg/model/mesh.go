@@ -43,27 +43,24 @@ func (m *Mesh) Draw(shader *shader.Shader) {
 		switch name {
 		case texDiffuse:
 			number = strconv.Itoa(diffuseNr)
+			diffuseNr++
 		case texSpecular:
 			number = strconv.Itoa(specularNr)
+			specularNr++
 		case texNormal:
 			number = strconv.Itoa(normalNr)
+			normalNr++
 		case texHeight:
 			number = strconv.Itoa(heightNr)
+			heightNr++
 		}
 
 		gl.ActiveTexture(gl.TEXTURE0 + uint32(i))
 
 		uniform := fmt.Sprintf("%s%s", name, number)
-		fmt.Printf("uniform name: %+v\n", uniform)
-
-		// gl.Uniform1i(gl.GetUniformLocation(shader.ID, gl.Str(uniform+"\x00")), int32(i))
+		// fmt.Printf("uniform name: %+v\n", uniform)
 		shader.SetInt(uniform, int32(i))
 		gl.BindTexture(gl.TEXTURE_2D, tex.id)
-
-		diffuseNr++
-		specularNr++
-		normalNr++
-		heightNr++
 	}
 
 	gl.BindVertexArray(m.vao)
