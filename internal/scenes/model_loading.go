@@ -3,6 +3,7 @@ package scenes
 import (
 	"fmt"
 	"log"
+	"math"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -84,9 +85,74 @@ func (s ModelLoading) Show() {
 		panic(err)
 	}
 
+	lightCubeShader, err := shader.New("internal/assets/shaders/light_colors_cube.vert", "internal/assets/shaders/light_colors_cube.frag")
+	if err != nil {
+		panic(err)
+	}
+
+	var vertices = []float32{
+		// x y z          normals         texture coords
+		-0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
+		0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 0.0,
+		0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
+		0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
+		-0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 1.0,
+		-0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
+
+		-0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
+		0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 0.0,
+		0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
+		0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
+		-0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 1.0,
+		-0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
+
+		-0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
+		-0.5, 0.5, -0.5, -1.0, 0.0, 0.0, 1.0, 1.0,
+		-0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
+		-0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
+		-0.5, -0.5, 0.5, -1.0, 0.0, 0.0, 0.0, 0.0,
+		-0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
+
+		0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
+		0.5, 0.5, -0.5, 1.0, 0.0, 0.0, 1.0, 1.0,
+		0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
+		0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
+		0.5, -0.5, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0,
+		0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
+
+		-0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
+		0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 1.0, 1.0,
+		0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
+		0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
+		-0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 0.0, 0.0,
+		-0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
+
+		-0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
+		0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 1.0,
+		0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
+		0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
+		-0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
+		-0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
+	}
+
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*floatSize, gl.Ptr(vertices), gl.STATIC_DRAW)
+
+	var lightCubeVAO uint32
+	gl.GenVertexArrays(1, &lightCubeVAO)
+	gl.BindVertexArray(lightCubeVAO)
+	gl.BindVertexArray(lightCubeVAO)
+
+	// Position attribute
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 8*floatSize, nil)
+	gl.EnableVertexAttribArray(0)
+
 	// Clean up all resources
 	defer func() {
 		modelShader.Delete()
+		lightCubeShader.Delete()
 	}()
 
 	gl.Enable(gl.DEPTH_TEST)
@@ -102,6 +168,7 @@ func (s ModelLoading) Show() {
 		s.deltaTime = currentFrame - s.lastFrame
 		s.lastFrame = currentFrame
 
+		// Draw the 3D model
 		modelShader.Use()
 
 		viewMatrix := s.camera.ViewMatrix()
@@ -112,7 +179,43 @@ func (s ModelLoading) Show() {
 
 		modelMatrix := mgl32.Ident4()
 		modelShader.SetMat4("model", modelMatrix)
+
+		lightPos := mgl32.Vec3{
+			-1.0 + float32(math.Sin(glfw.GetTime())*3.0),
+			0.6,
+			float32(math.Cos(glfw.GetTime()) * 3.0),
+			// 0.0, 2.0, 1.0,
+		}
+
+		modelShader.SetVec3("light.position", lightPos)
+		modelShader.SetVec3("viewPos", s.camera.Position)
+
+		modelShader.SetVec3f("light.ambient", 0.2, 0.2, 0.2)
+		modelShader.SetVec3f("light.diffuse", 0.9, 0.6, 0.4)
+		modelShader.SetVec3f("light.specular", 1.0, 1.0, 1.0)
+		modelShader.SetFloat("light.constant", 1.0)
+		modelShader.SetFloat("light.linear", 0.09)
+		modelShader.SetFloat("light.quadratic", 0.032)
+
 		model3D.Draw(modelShader)
+
+		// Draw the lamp
+		lightCubeShader.Use()
+
+		lightCubeShader.SetMat4("view", viewMatrix)
+		lightCubeShader.SetMat4("projection", projectionMatrix)
+
+		modelMatrix = mgl32.Ident4()
+		translate := mgl32.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z())
+		modelMatrix = modelMatrix.Mul4(translate)
+		scale := mgl32.Scale3D(0.2, 0.2, 0.2)
+		modelMatrix = modelMatrix.Mul4(scale)
+		lightCubeShader.SetMat4("model", modelMatrix)
+
+		lightCubeShader.SetVec3("lightColor", mgl32.Vec3{1.0, 1.0, 1.0})
+
+		gl.BindVertexArray(lightCubeVAO)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		window.SwapBuffers()
 		glfw.PollEvents()
