@@ -26,7 +26,7 @@ func New() *Camera {
 		WorldUp:          mgl32.Vec3{0.0, 1.0, 0.0},
 		Yaw:              -90.0,
 		Pitch:            0.0,
-		MovementSpeed:    2.5,
+		MovementSpeed:    10.0,
 		MouseSensitivity: 0.1,
 		Fov:              45.0,
 	}

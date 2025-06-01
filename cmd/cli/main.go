@@ -53,6 +53,7 @@ var allScenes = map[string]scenes.Scene{
 	scenes.PointLight{}.Name():       scenes.NewPointLight(),
 	scenes.SpotLight{}.Name():        scenes.NewSpotLight(),
 	scenes.ModelLoading{}.Name():     scenes.NewModelLoading(),
+	scenes.DepthTesting{}.Name():     scenes.NewDepthTesting(),
 }
 
 func help() {
